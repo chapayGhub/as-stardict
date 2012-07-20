@@ -1,0 +1,13 @@
+#星际译王字典
+#首先安装星际译王
+#ubuntu下
+sudo apt-get install -y stardict
+
+#fedora下
+su -c yum install -y stardict
+
+#将字典文件复制到/usr/share/stardict/dic/
+#cd 到本文件的目录下，然后，
+sudo cp ./ /usr/share/stardict/dic/ -R
+#完成，你可以打开stardict看看了。
+#里面有湘雅医学专业词典、牛津英汉双解美化版、佛学大辞典、高级汉语词曲、计算机词汇。如果不够可以自己上网找来，按照上面的步骤安装。PS：还有一种deb包的字典，直接点击安装就可以了。
