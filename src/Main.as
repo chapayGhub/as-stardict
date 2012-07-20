@@ -105,19 +105,28 @@ package
 			var wordByte:ByteArray = new ByteArray();
 			var wordObj:Object = { };
 			wordList = [];
+			var count:int = 0;
+			var lastPos:int = 0;
 			while (indexData.position!=indexData.length) {
 				
 				var byte:int = indexData.readByte();
 				wordByte.writeByte(byte);
 				endByte.position = 0;
+				
 				if (byte == endByte.readByte()) {
+					
+					wordObj.word_bytes = wordByte;
 					wordByte.position = 0;
-					wordObj.word_str = wordByte;
-					wordObj.word_data_offset = indexData.readFloat();
-					wordObj.word_data_size = indexData.readFloat();
+					wordObj.word_str = wordByte.readUTFBytes(wordByte.length);
+					wordByte.position = 0;
+					wordObj.word_data_offset = indexData.readUnsignedInt();
+					wordObj.word_data_size = indexData.readUnsignedInt();
 					wordObj.len = wordByte.length;
 					wordList.push(wordObj);
 					
+					resultTxt.text += (indexData.position-lastPos) + "|"+wordObj.word_str+"\n";
+					lastPos = indexData.position;
+					count++;
 					/////get new word///
 					wordObj = { };
 					wordByte = new ByteArray();
@@ -126,13 +135,15 @@ package
 				
 				
 			}
+			
+			resultTxt.text += "count:" + count;
 		}
 		
 		
 		private  function dicLoaderCompleteHandler(evt:Event):void {
 			
 			dicData = dicLoader.data;
-			resultTxt.text = "ok";
+			resultTxt.text += "ok";
 		}
 		
 		
@@ -144,7 +155,7 @@ package
 			resultTxt.text = wordList.length+"";
 			for (var i:int = 0; i <wordList.length; i++) {
 				
-				var wByte:ByteArray = wordList[i].word_str as ByteArray ;
+				var wByte:ByteArray = wordList[i].word_bytes as ByteArray ;
 				wByte.position = 0;
 				var wordStr:String = wByte.readUTFBytes(wByte.length);
 				wByte.position = 0;
