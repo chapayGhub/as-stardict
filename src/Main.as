@@ -32,6 +32,8 @@ package
 		private var dicData:ByteArray;
 		private var endByte:ByteArray;
 		
+		private var wordList:Array;
+		
 		public function Main():void 
 		{
 			if (stage) init();
@@ -61,6 +63,7 @@ package
 			resultTxt.width = 500;
 			resultTxt.height = 300;
 			resultTxt.border = true;
+			resultTxt.type=TextFieldType.INPUT
 			//resultTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(resultTxt);
 			resultTxt.y = 50;
@@ -77,7 +80,7 @@ package
 			
 			var indexFile:String = "dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated.idx";
 			var dicFile:String = "dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated.dict"
-			dicFile = "dic/stardict-oxford-gb-formated-2.4.2/aaa.txt";
+			//dicFile = "dic/stardict-oxford-gb-formated-2.4.2/aaa.txt";
 			
 			indexLoader = new URLLoader();
 			indexLoader.dataFormat = URLLoaderDataFormat.BINARY;
@@ -98,22 +101,10 @@ package
 		private  function indexLoaderCompleteHandler(evt:Event):void {
 			
 			indexData = indexLoader.data;
-		}
-		
-		
-		private  function dicLoaderCompleteHandler(evt:Event):void {
-			
-			dicData = dicLoader.data;
-		}
-		
-		
-		private function searchBtnClickHandler(evt:MouseEvent):void {
-			
-			var queryTxt:String = qTxt.text;
 			
 			var wordByte:ByteArray = new ByteArray();
 			var wordObj:Object = { };
-			var wordList:Array = [];
+			wordList = [];
 			while (indexData.position!=indexData.length) {
 				
 				var byte:int = indexData.readByte();
@@ -122,23 +113,51 @@ package
 				if (byte == endByte.readByte()) {
 					wordByte.position = 0;
 					wordObj.word_str = wordByte;
-					wordObj.word_data_offset = indexData.readInt();
-					wordObj.word_data_size = indexData.readInt();
+					wordObj.word_data_offset = indexData.readFloat();
+					wordObj.word_data_size = indexData.readFloat();
+					wordObj.len = wordByte.length;
 					wordList.push(wordObj);
+					
+					/////get new word///
+					wordObj = { };
 					wordByte = new ByteArray();
 					
 				}
 				
 				
 			}
+		}
+		
+		
+		private  function dicLoaderCompleteHandler(evt:Event):void {
 			
-			for (var i:int = 0; i < wordList.length; i++) {
+			dicData = dicLoader.data;
+			resultTxt.text = "ok";
+		}
+		
+		
+		private function searchBtnClickHandler(evt:MouseEvent):void {
+			
+			var queryTxt:String = qTxt.text;
+			resultTxt.text = "";
+			
+			resultTxt.text = wordList.length+"";
+			for (var i:int = 0; i <wordList.length; i++) {
 				
 				var wByte:ByteArray = wordList[i].word_str as ByteArray ;
-				resultTxt.text += wByte.readUTFBytes(wByte.length)+"\n";
+				wByte.position = 0;
+				var wordStr:String = wByte.readUTFBytes(wByte.length);
+				wByte.position = 0;
+				var resultStr:String = "没有找到";
+				if (wordStr == queryTxt) {
+					
+					dicData.position = wordList[i].word_data_offset;
+					resultStr="aaa"+dicData.readUTFBytes(wordList[i].word_data_offset);
+				}
+				resultTxt.text += wordStr+" ";
 			}
 			
-			
+			resultTxt.text += resultStr;
 		}
 		
 		private function searchText(queryTxt:String):void {
