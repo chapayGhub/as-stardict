@@ -91,7 +91,7 @@ package
 			dicLoader.load(new URLRequest(dicFile));
 			
 			endByte = new ByteArray();
-			endByte.writeByte(0);
+			endByte.writeUTFBytes('\0');
 		}
 		
 		
@@ -112,18 +112,33 @@ package
 			var queryTxt:String = qTxt.text;
 			
 			var wordByte:ByteArray = new ByteArray();
-			while (true) {
+			var wordObj:Object = { };
+			var wordList:Array = [];
+			while (indexData.position!=indexData.length) {
 				
 				var byte:int = indexData.readByte();
+				wordByte.writeByte(byte);
 				endByte.position = 0;
 				if (byte == endByte.readByte()) {
-					break;
+					wordByte.position = 0;
+					wordObj.word_str = wordByte;
+					wordObj.word_data_offset = indexData.readInt();
+					wordObj.word_data_size = indexData.readInt();
+					wordList.push(wordObj);
+					wordByte = new ByteArray();
+					
 				}
-				wordByte.writeByte(byte);
+				
 				
 			}
-			endByte.position = 0;
-			resultTxt.text = wordByte.readUTFBytes(wordByte.length);
+			
+			for (var i:int = 0; i < wordList.length; i++) {
+				
+				var wByte:ByteArray = wordList[i].word_str as ByteArray ;
+				resultTxt.text += wByte.readUTFBytes(wByte.length)+"\n";
+			}
+			
+			
 		}
 		
 		private function searchText(queryTxt:String):void {
